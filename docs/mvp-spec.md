@@ -1,19 +1,18 @@
-# FileCompare Java MVP Specification
+# FileCompare Python GUI MVP Specification
 
 ## 목표
 Windows 환경에서 파일 이동/삭제/이름 변경을 **실행 전에 GUI에서 미리보기**하고,
 규칙 기반으로 파일을 카테고리별 정리하며, 중복 파일을 안전하게 정리한다.
 
 ## 구현 원칙
-- 본 프로젝트의 사용자 기능은 CLI가 아닌 **GUI(JavaFX)** 중심으로 제공한다.
+- 본 프로젝트의 사용자 기능은 CLI가 아닌 **GUI(Tkinter)** 중심으로 제공한다.
 - 모든 파일 변경 작업은 GUI의 미리보기 테이블에서 사용자 확인 후 실행한다.
 
 ## 기술 스택
-- Java 21 (LTS)
-- JavaFX 21 (데스크톱 GUI)
-- Gradle (빌드)
-- Jackson (규칙/설정 직렬화)
-- SLF4J + Logback (실행 로그)
+- Python 3.11+
+- Tkinter (표준 GUI)
+- pathlib / hashlib / shutil (파일 처리)
+- JSON Lines (실행 로그)
 
 ## MVP 기능 범위
 1. 폴더 스캔
@@ -44,21 +43,21 @@ Windows 환경에서 파일 이동/삭제/이름 변경을 **실행 전에 GUI�
 
 ## 아키텍처
 ### 패키지 구조
-- `com.filecompare.app`
-  - `ui`: JavaFX 화면/컨트롤러
-  - `core.scan`: 스캔 및 인덱싱
-  - `core.rules`: 규칙 모델/평가기
-  - `core.plan`: 작업 계획(Operation) 생성
-  - `core.execute`: 실제 실행기/충돌 처리
-  - `core.dedupe`: 중복 탐지
-  - `infra.config`: 설정 로딩/저장
-  - `infra.logging`: 감사 로그
+- `src/`
+  - `filecompare_app.py`: Tkinter UI 엔트리포인트
+  - `core/scan.py`: 스캔 및 인덱싱
+  - `core/rules.py`: 규칙 모델/평가기
+  - `core/plan.py`: 작업 계획(Operation) 생성
+  - `core/execute.py`: 실제 실행기/충돌 처리
+  - `core/dedupe.py`: 중복 탐지
+  - `infra/config.py`: 설정 로딩/저장
+  - `infra/logging.py`: 감사 로그
 
 ### 핵심 도메인 모델
 - `FileEntry`: 파일 메타데이터
 - `Rule`: 조건 + 대상 경로 템플릿 + 우선순위
-- `Operation`: `{type, source, target, reason, conflictStatus}`
-- `ExecutionResult`: `{operationId, status, message}`
+- `Operation`: `{type, source, target, reason, conflict_status}`
+- `ExecutionResult`: `{operation_id, status, message}`
 - `DuplicateGroup`: `{hash, files[]}`
 
 ## 안전 정책
@@ -69,13 +68,13 @@ Windows 환경에서 파일 이동/삭제/이름 변경을 **실행 전에 GUI�
 
 ## 성능 목표
 - 100,000 파일 스캔: 60초 이내(SSD 기준)
-- UI 스레드 블로킹 금지(백그라운드 Task 사용)
+- UI 스레드 블로킹 금지(백그라운드 스레드 사용)
 - 중복 해시 계산 시 진행률 표시 및 취소 지원
 
 ## 초기 구현 순서
 1. 도메인 모델 + 스캔기
 2. 규칙 엔진 + 드라이런 Operation 생성
-3. JavaFX 미리보기 테이블
+3. Tkinter 미리보기 테이블
 4. 실행기(이동/리네임/휴지통)
 5. 중복 탐지 및 그룹 UI
 6. 로그/리포트 내보내기
